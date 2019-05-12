@@ -4,9 +4,9 @@ from lliststack import Stack
 
 class Maze :
     # Define constants to represent contents of the maze cells.
-    MAZE_WALL = " *"
-    PATH_TOKEN = "x"
-    TRIED_TOKEN = "o"
+    MAZE_WALL = "* "
+    PATH_TOKEN = "x "
+    TRIED_TOKEN = "o "
 
     # Creates a maze object with all cells marked as open.
     def __init__( self, num_rows, num_cols ):
@@ -43,7 +43,34 @@ class Maze :
     # Attempts to solve the maze by finding a path from the starting cell
     # to the exit. Returns True if a path is found and False otherwise.
     def findPath( self ):
-        pass
+        current = _CellPosition(self._startCell.row, self._startCell.col)
+        self._markPath(current.row, current.col)
+        options = [(current.row - 1, current.col), (current.row, current.col + 1),
+                   (current.row + 1, current.col), (current.row, current.col - 1)]
+        while not self._exitFound(current.row, current.col):
+            for i, j in options:
+                valid_found = False
+                if self._validMove(i, j):
+                    previous = _CellPosition(current.row, current.col)
+                    valid_found = True
+                    current = _CellPosition(i, j)
+                    self._markPath(current.row, current.col)
+                    self.draw()
+                    break
+            if not valid_found:
+                options = [(previous.row - 1, previous.col), (previous.row, previous.col + 1),
+                           (previous.row + 1, previous.col), (previous.row, previous.col - 1)]
+                options.remove((current.row, current.col))
+                self._markTried(current.row, current.col)
+                current = previous
+                self.draw()
+            else:
+                options = [(current.row - 1, current.col), (current.row, current.col + 1),
+                           (current.row + 1, current.col), (current.row, current.col - 1)]
+        return True
+
+
+
 
     # Resets the maze by removing all "path" and "tried" tokens.
     def reset( self ):
@@ -51,7 +78,12 @@ class Maze :
 
     # Prints a text-based representation of the maze.
     def draw( self ):
-        pass
+        maze = ""
+        for i in range(self.num_rows()):
+            for j in range(self.num_cols()):
+                maze += self._mazeCells[i, j] if self._mazeCells[i, j] else "  "
+            maze += "\n"
+        print(maze)
 
     # Returns True if the given cell position is a valid move.
     def _validMove( self, row, col ):
